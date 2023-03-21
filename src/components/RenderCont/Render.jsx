@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { List, Item, Button, Name } from './Render.styled';
-export const RenderContact = ({ contacts, deleteContact }) => {
+export const RenderContact = ({ contacts, handleDelete }) => {
   return (
     <List>
       {contacts.map(({ name, number, id }) => (
         <Item key={id}>
           <Name>{name}</Name>
           <p>{number}</p>
-          <Button type="button" onClick={() => deleteContact(id)}>
+          <Button type="button" onClick={() => handleDelete(id)}>
             Delete
           </Button>
         </Item>
@@ -25,5 +25,5 @@ RenderContact.propTypes = {
       number: PropTypes.string.isRequired,
     })
   ),
-  deleteContact: PropTypes.func.isRequired,
+  handleDelete: PropTypes.func.isRequired,
 };

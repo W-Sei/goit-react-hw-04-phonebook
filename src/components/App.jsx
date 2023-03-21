@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { GlobalStyle } from 'GlobalStyles.styled';
 import { AddContact } from './AddCont/Add';
 import { FilterContact } from './FindCont/Find';
@@ -10,86 +10,69 @@ import { TitleContact, TitleMain } from './Title/Title.styled';
 import { ContactsWrapper } from './Wrapper/ContactsWrapper.styled';
 import { nanoid } from 'nanoid';
 
-export class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
+export const App = () => {
+  const [contacts, setContacts] = useState(
+    () =>
+      JSON.parse(localStorage.getItem('contactList')) ?? [
+        { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+        { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+        { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+        { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+      ]
+  );
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('contactList', JSON.stringify(contacts));
+  }, [contacts]);
+
+  const handleChange = e => {
+    const { value } = e.target;
+    setFilter(value);
   };
 
-  componentDidMount() {
-    const myContacts = localStorage.getItem('contactList');
-    
-    if (myContacts) {
-      const parsedContacts = JSON.parse(myContacts);
-      this.setState({ contacts: parsedContacts });
+  const handleSubmit = e => {
+    const id = nanoid();
+    const name = e.name;
+    const number = e.number;
+    const contactsLists = [...contacts];
+
+    if (contactsLists.findIndex(contact => name === contact.name) !== -1) {
+      Notiflix.Notify.info(`${name} is already in contacts.`);
+    } else {
+      contactsLists.push({ name, number, id });
     }
-  }
 
-  componentDidUpdate(_, prevState) {
-    const prevStateContacts = prevState.contacts;
-    const nextStayContacts = this.state.contacts;
-
-    if (prevStateContacts !== nextStayContacts) {
-      localStorage.setItem('contactList', JSON.stringify(nextStayContacts));
-    }
-  }
-
-  findName = evt => {
-    this.setState({ filter: evt.target.value.toLowerCase() });
+    return setContacts(contactsLists);
   };
 
-  addContact = ({ name, number }) => {
-    const contact = {
-      id: nanoid(),
-      name,
-      number,
-    };
-
-    let contactExists = this.state.contacts.findIndex(
-      contact => contact.name === name
-    );
- 
-    if (contactExists >= 0) {
-      Notiflix.Notify.info(`${name} is already in contacts`);
-      return;
-    }
-    this.setState(prevState => ({
-      contacts: [contact, ...prevState.contacts],
-    }));
+  const handleDelete = e => {
+    setContacts(contacts.filter(contact => contact.id !== e));
   };
 
-  deleteContact = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
+  const getFilteredContacts = () => {
+    const filterContactsList = contacts.filter(contact => {
+      return contact.name.toLowerCase().includes(filter.toLowerCase());
+    });
+
+    return filterContactsList;
   };
 
-  render() {
-    const contactsFilter = this.state.contacts.filter(contact =>
-      contact.name.toLowerCase().includes(this.state.filter)
-    );
-
-    return (
-      <Wrapper>
-        <GlobalStyle />
-        <TitleMain>Phonebook</TitleMain>
-        <AddContact addContact={this.addContact} />
-        {this.state.contacts.length > 0 && (
-          <ContactsWrapper>
-            <TitleContact>Contacts:</TitleContact>
-            <FilterContact filter={this.findName} />
-            <RenderContact
-              contacts={contactsFilter}
-              deleteContact={this.deleteContact}
-            />
-          </ContactsWrapper>
-        )}
-      </Wrapper>
-    );
-  }
-}
+  return (
+    <Wrapper>
+      <GlobalStyle />
+      <TitleMain>Phonebook</TitleMain>
+      <AddContact handleSubmit={handleSubmit} />
+      {contacts.length > 0 && (
+        <ContactsWrapper>
+          <TitleContact>Contacts:</TitleContact>
+          <FilterContact filter={filter} handleChange={handleChange} />
+          <RenderContact
+            contacts={getFilteredContacts()}
+            handleDelete={handleDelete}
+          />
+        </ContactsWrapper>
+      )}
+    </Wrapper>
+  );
+};

@@ -17,12 +17,13 @@ const userSchema = object({
   number: string().required().min(5).max(20),
 });
 
-export const AddContact = ({ addContact }) => {
+export const AddContact = ({ handleSubmit }) => {
+  
   return (
     <Formik
       initialValues={{ name: '', number: '' }}
       onSubmit={(values, { resetForm }) => {
-        addContact({
+        handleSubmit({
           ...values,
           id: nanoid(),
         });
@@ -56,5 +57,5 @@ export const AddContact = ({ addContact }) => {
 };
 
 AddContact.propTypes = {
-  addContact: PropTypes.func.isRequired,
+  handleSubmit: PropTypes.func.isRequired,
 };
