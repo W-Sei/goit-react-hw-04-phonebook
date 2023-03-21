@@ -48,6 +48,7 @@ export const App = () => {
 
   const handleDelete = e => {
     setContacts(contacts.filter(contact => contact.id !== e));
+    Notiflix.Notify.success('Contact removed sucessfully.');
   };
 
   const getFilteredContacts = () => {
